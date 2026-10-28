@@ -92,6 +92,24 @@
   var ig = document.getElementById('ig-link');
   if (ig) { if (K.instagram) ig.href = K.instagram; else ig.style.display = 'none'; }
 
+
+  // Briefly highlights the area a navigation button takes you to
+  function flash(nodes) {
+    Array.prototype.forEach.call(nodes, function (n) {
+      n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash');
+      clearTimeout(n._kbT); n._kbT = setTimeout(function () { n.classList.remove('flash'); }, 1700);
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.nav-btn[href]'), function (a) {
+    a.addEventListener('click', function () {
+      var id = a.getAttribute('href');
+      var t = id === '#services' ? document.querySelectorAll('.panels .panel') : id === '#refill' ? document.querySelectorAll('.refill-box') : [];
+      flash(t);
+    });
+  });
+  var navG = document.getElementById('gallery-nav');
+  if (navG) navG.addEventListener('click', function () { flash([document.getElementById('g-drawer')]); });
+
   // Make the header and footer Book buttons use the booking link
   Array.prototype.forEach.call(document.querySelectorAll('[data-book]'), function (a) { a.href = BOOK; });
 

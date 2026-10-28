@@ -111,4 +111,7 @@ body.drawer-open{overflow:hidden}
 .lb-next{right:12px;top:50%;margin-top:-24px}
 @media (max-width:600px){.lb-prev,.lb-next{top:auto;bottom:14px;margin-top:0}.lb-prev{left:calc(50% - 56px)}.lb-next{right:calc(50% - 56px)}.lb-fig img{max-height:calc(100dvh - 190px)}}
 body.lb-open{overflow:hidden}
+@keyframes kbflash{0%{box-shadow:0 0 0 0 rgba(143,75,87,0)}18%{box-shadow:0 0 0 5px rgba(143,75,87,.6),0 0 28px 6px rgba(143,75,87,.28)}70%{box-shadow:0 0 0 5px rgba(143,75,87,.45),0 0 22px 4px rgba(143,75,87,.2)}100%{box-shadow:0 0 0 0 rgba(143,75,87,0)}}
+.flash{animation:kbflash 1.6s ease-out}
+@media (prefers-reduced-motion:reduce){.flash{animation:none;outline:3px solid var(--rose);outline-offset:3px}}
 @media (prefers-reduced-motion:reduce){.drawer,.drawer.open,.scrim{transition:none !important}*{transition:none !important;scroll-behavior:auto !important}}
