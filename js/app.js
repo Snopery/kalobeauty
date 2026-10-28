@@ -1,11 +1,81 @@
 /* KALOBEAUTY page logic. You normally do not need to edit this file.
    Edit data/services.js instead. */
 (function () {
-  var K = window.KALO;
+  var PROBLEMS = [];
+  var ICONS = ['lash', 'refill', 'removal', 'tint', 'liftext', 'liftbrow', 'browwax', 'lipwax', 'chinwax', 'sidewax'];
+
+  // Reads the plain-text content in data/services.js
+  function parse(text) {
+    var K = { bookUrl: '', calendarId: '', categories: [], services: [], refillGuide: null };
+    var cat = null, svc = null, opt = null, inRefill = false, line;
+    var lines = String(text || '').split(/\r?\n/);
+    function problem(n, msg) { PROBLEMS.push('Line ' + n + ': ' + msg); }
+    lines.forEach(function (raw, i) {
+      line = raw.trim();
+      if (!line || line.charAt(0) === '#') return;
+      var m = line.match(/^([A-Za-z ]+?)\s*:\s*(.*)$/);
+      var key = m ? m[1].toLowerCase() : line.toLowerCase();
+      var val = m ? m[2].trim() : '';
+      if (key === 'refill guide') { inRefill = true; cat = svc = opt = null; K.refillGuide = { title: '', question: '', options: [] }; return; }
+      if (inRefill) {
+        var g = K.refillGuide;
+        if (key === 'title') g.title = val;
+        else if (key === 'question') g.question = val;
+        else if (key === 'option') { opt = { label: val, service: '', note: '' }; g.options.push(opt); }
+        else if (opt && key === 'service') opt.service = val;
+        else if (opt && key === 'note') opt.note = val;
+        else problem(i + 1, 'Not understood in the refill guide: "' + line + '"');
+        return;
+      }
+      if (key === 'booking link') K.bookUrl = val;
+      else if (key === 'calendar number') K.calendarId = val;
+      else if (key === 'category') { cat = { id: 'c' + K.categories.length, label: val, note: '' }; K.categories.push(cat); svc = null; }
+      else if (key === 'service') {
+        if (!cat) { problem(i + 1, 'Service "' + val + '" is not under a CATEGORY: line.'); svc = null; return; }
+        svc = { id: 's' + K.services.length, category: cat.id, short: val, name: val, time: '', price: '', appointmentId: '', image: '', icon: 'lash', tag: '', description: '' };
+        K.services.push(svc);
+      }
+      else if (key === 'note' && cat && !svc) cat.note = val;
+      else if (svc && key === 'full name') svc.name = val;
+      else if (svc && key === 'price') svc.price = val;
+      else if (svc && key === 'time') svc.time = val;
+      else if (svc && key === 'booking number') svc.appointmentId = val.replace(/\D/g, '');
+      else if (svc && key === 'photo') svc.image = val;
+      else if (svc && key === 'icon') { svc.icon = val.toLowerCase(); if (ICONS.indexOf(svc.icon) < 0) { problem(i + 1, 'Unknown icon "' + val + '". Using lash.'); svc.icon = 'lash'; } }
+      else if (svc && key === 'badge') svc.tag = val;
+      else if (svc && key === 'description') svc.description = val;
+      else problem(i + 1, 'Not understood: "' + line + '"');
+    });
+    K.services.forEach(function (s) {
+      ['price', 'time', 'appointmentId'].forEach(function (f) { if (!s[f]) PROBLEMS.push('"' + s.short + '" is missing ' + (f === 'appointmentId' ? 'Booking number' : f.charAt(0).toUpperCase() + f.slice(1)) + '.'); });
+    });
+    if (!K.bookUrl) PROBLEMS.push('Booking link is missing.');
+    if (K.refillGuide) K.refillGuide.options = K.refillGuide.options.filter(function (o) {
+      var ok = K.services.some(function (s) { return s.short.toLowerCase() === o.service.toLowerCase(); });
+      if (!ok) PROBLEMS.push('Refill option "' + o.label + '" uses Service "' + o.service + '" which is not a SERVICE name.');
+      return ok;
+    });
+    if (K.refillGuide && !K.refillGuide.options.length) K.refillGuide = null;
+    return K;
+  }
+
+  var K = parse(window.KALO_CONTENT);
   var BOOK = K.bookUrl;
   var A = function (id) { return BOOK + '/appointment/' + id + '/calendar/' + K.calendarId; };
   var byId = {};
   K.services.forEach(function (s) { byId[s.id] = s; });
+  if (K.refillGuide) K.refillGuide.options.forEach(function (o) {
+    o.service = K.services.filter(function (s) { return s.short.toLowerCase() === o.service.toLowerCase(); })[0].id;
+  });
+
+  // Show any mistakes in the content file as a visible notice (only you will notice it)
+  if (PROBLEMS.length) {
+    console.warn('KALOBEAUTY content problems:\n' + PROBLEMS.join('\n'));
+    var box = document.createElement('div');
+    box.setAttribute('style', 'background:#fff3cd;color:#4a3300;border-bottom:2px solid #e0a800;padding:12px 16px;font:15px/1.4 sans-serif');
+    box.innerHTML = '<strong>Content file needs attention (data/services.js):</strong><ul style="margin:6px 0 0 18px;padding:0">' + PROBLEMS.map(function (p) { return '<li>' + p.replace(/[&<>]/g, '') + '</li>'; }).join('') + '</ul>';
+    document.body.insertBefore(box, document.body.firstChild);
+  }
 
   // Make the header and footer Book buttons use the booking link
   Array.prototype.forEach.call(document.querySelectorAll('[data-book]'), function (a) { a.href = BOOK; });
@@ -36,7 +106,7 @@
   var BADGE = { d: disc(520, 80, 40), s: 'none', w: 0, f: ROSE };
   function sign(d) { return { d: d, s: LIGHT, w: 6 }; }
   var ART = {
-    'default': [BROW, { d: lashD(function () { return true; }, 0, 1, 1), s: INK, w: 2.4 }, LID, LOW],
+    lash: [BROW, { d: lashD(function () { return true; }, 0, 1, 1), s: INK, w: 2.4 }, LID, LOW],
     refill: [{ d: lashD(function (i) { return i % 3 !== 1; }, 0, 1, 1), s: INK, w: 2.4 }, { d: lashD(function (i) { return i % 3 === 1; }, 0, 1, 1), s: ROSE, w: 4.2 }, LID, LOW, BADGE, sign('M520 62 V98 M502 80 H538')],
     removal: [{ d: lashD(function (i) { return i % 2 === 0; }, -64, 1, 1), s: ROSE, w: 2.6, da: [9, 9] }, { d: lashD(function () { return true; }, 0, 0.42, 1), s: INK, w: 2.4 }, LID, LOW, BADGE, sign('M502 80 H538')],
     tint: [{ d: lashD(function () { return true; }, 0, 1, 1), s: INK, w: 5 }, LID, LOW, { d: 'M520 40 C508 64 490 80 490 100 A30 30 0 0 0 550 100 C550 80 532 64 520 40 Z', s: 'none', w: 0, f: ROSE }],
@@ -49,7 +119,7 @@
   };
   function artSvg(icon, k, cap) {
     var out = '<svg viewBox="0 0 600 380" aria-hidden="true" focusable="false" fill="none" stroke-linecap="round" stroke-linejoin="round">';
-    (ART[icon]||ART['default']).forEach(function (p) {
+    (ART[icon]||ART['lash']).forEach(function (p) {
       var w = Math.min(p.w * k, cap);
       out += '<path d="' + p.d + '" stroke="' + p.s + '" stroke-width="' + w + '" fill="' + (p.f || 'none') + '"' + (p.da ? ' stroke-dasharray="' + (p.da[0] * k) + ' ' + (p.da[1] * k) + '"' : '') + '/>';
     });
