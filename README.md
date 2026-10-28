@@ -1,5 +1,7 @@
 # KALOBEAUTY website
 
+Access to locally hosted gitpages url: https://snopery.github.io/kalobeauty/
+
 ```
 kalobeauty-site/
   index.html          page layout (rarely needs editing)
