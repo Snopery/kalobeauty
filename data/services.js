@@ -27,6 +27,9 @@
                     browwax, lipwax, chinwax, sidewax
    Badge:           small label on the preview, e.g. Most popular (optional)
    Description:     text shown in the preview (optional)
+
+   GALLERY (the photo strip): see the GALLERY section near the bottom.
+   Put the photo files in images/gallery/ and add one Photo: line each.
    ====================================================================== */
 
 window.KALO_CONTENT = `
@@ -200,6 +203,21 @@ Booking number: 95163439
 Icon: liftbrow
 Badge: New clients only
 Description: The signature Korean lash lift and tint, completed with a luxury eyebrow sculpt, wax and dye.
+
+# ======================================================
+# GALLERY (the scrolling photo strip, "The work")
+# Put photo files in the images/gallery/ folder.
+# Each Photo: line adds one photo, in this order. Caption: is optional
+# and applies to the Photo: line above it. Delete a Photo: line to remove it.
+# Delete the whole GALLERY section to hide the strip.
+GALLERY
+
+Photo: gallery-01.jpg
+Photo: gallery-02.jpg
+Photo: gallery-04.jpg
+Photo: gallery-05.jpg
+Photo: gallery-06.jpg
+Photo: gallery-07.jpg
 
 # ======================================================
 # REFILL GUIDE (the 'Which refill do you need?' section)

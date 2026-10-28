@@ -1,13 +1,13 @@
 # KALOBEAUTY website
 
-Access to locally hosted gitpages url: https://snopery.github.io/kalobeauty/
 ```
 kalobeauty-site/
   index.html          page layout (leave alone)
   css/style.css       colours and fonts (variables at the top)
   js/app.js           page behaviour (leave alone)
   data/services.js    <-- YOUR CONTENT: edit this in Notepad / TextEdit
-  images/             <-- YOUR PHOTOS: put image files here
+  images/             <-- YOUR PHOTOS: tile photos here
+  images/gallery/     <-- gallery strip photos here
 ```
 
 `data/services.js` is plain text. No brackets, quotes or commas to worry about.
@@ -43,6 +43,13 @@ No photo? Leave out the Photo line and add `Icon: lash` (or refill, removal, tin
 
 ## Add, rename, remove or reorder a category
 Each `CATEGORY:` line is a button. Add `Note:` underneath for the small line shown under the tiles. Order in the file = order on the site.
+
+## Photo gallery (the scrolling photo strip)
+1. Put photos in `images/gallery/` (JPG, about 1200 px on the long side, under 200 KB each).
+2. In `data/services.js`, find the `GALLERY` section and add one line per photo: `Photo: my-photo.jpg`.
+3. Optional: add `Title: The work` right under `GALLERY` to show a heading above the strip.
+4. Optional: add `Caption: Soft wispy set` under a Photo line. It shows on hover and in the full-screen view.
+Photos can be portrait or landscape. Delete a Photo line to remove it, or delete the whole GALLERY section to hide the strip. Customers can scroll the strip, tap a photo to enlarge it, and swipe or use arrow keys to move between photos.
 
 ## Refill guide
 Edit the `REFILL GUIDE` section at the bottom. Each `OPTION:` points to a service by its exact `SERVICE:` name, so the price and link come from that service. Delete the whole section to hide it.

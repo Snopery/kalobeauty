@@ -6,8 +6,8 @@
 
   // Reads the plain-text content in data/services.js
   function parse(text) {
-    var K = { bookUrl: '', calendarId: '', categories: [], services: [], refillGuide: null };
-    var cat = null, svc = null, opt = null, inRefill = false, line;
+    var K = { bookUrl: '', calendarId: '', categories: [], services: [], refillGuide: null, gallery: null };
+    var cat = null, svc = null, opt = null, inRefill = false, inGallery = false, gpic = null, line;
     var lines = String(text || '').split(/\r?\n/);
     function problem(n, msg) { PROBLEMS.push('Line ' + n + ': ' + msg); }
     lines.forEach(function (raw, i) {
@@ -16,7 +16,16 @@
       var m = line.match(/^([A-Za-z ]+?)\s*:\s*(.*)$/);
       var key = m ? m[1].toLowerCase() : line.toLowerCase();
       var val = m ? m[2].trim() : '';
-      if (key === 'refill guide') { inRefill = true; cat = svc = opt = null; K.refillGuide = { title: '', question: '', options: [] }; return; }
+      if (key === 'gallery') { inGallery = true; inRefill = false; cat = svc = opt = null; K.gallery = { title: '', photos: [] }; return; }
+      if (inGallery) {
+        if (key === 'title') K.gallery.title = val;
+        else if (key === 'photo') { gpic = { file: val, caption: '' }; K.gallery.photos.push(gpic); }
+        else if (key === 'caption' && gpic) gpic.caption = val;
+        else if (key === 'refill guide') { /* handled below */ }
+        else { problem(i + 1, 'Not understood in the gallery: "' + line + '"'); return; }
+        if (key !== 'refill guide') return;
+      }
+      if (key === 'refill guide') { inRefill = true; inGallery = false; cat = svc = opt = null; K.refillGuide = { title: '', question: '', options: [] }; return; }
       if (inRefill) {
         var g = K.refillGuide;
         if (key === 'title') g.title = val;
@@ -56,6 +65,7 @@
       return ok;
     });
     if (K.refillGuide && !K.refillGuide.options.length) K.refillGuide = null;
+    if (K.gallery && !K.gallery.photos.length) K.gallery = null;
     return K;
   }
 
@@ -205,5 +215,77 @@
   });
 
   if (!K.refillGuide) { var rf = el('refill'); if (rf) rf.style.display = 'none'; var rn = el('refill-nav'); if (rn) rn.style.display = 'none'; }
+  // ---------- Gallery ----------
+  (function () {
+    var sec = el('gallery');
+    var G = K.gallery;
+    if (!G) { if (sec) sec.style.display = 'none'; var gn = el('gallery-nav'); if (gn) gn.style.display = 'none'; return; }
+    var strip = el('g-strip'), lb = el('lb'), lbImg = el('lb-img'), lbCap = el('lb-cap');
+    var cur = 0, opener = null;
+    el('gallery-title').textContent = G.title; if (!G.title) el('gallery-title').style.display = 'none';
+    var photos = G.photos.slice();
+    var start = 0;
+    // Draws the strip starting at photo "start" and wrapping round, so it loops forever
+    function build() {
+      var order = photos.map(function (p, i) { return i; });
+      order = order.slice(start).concat(order.slice(0, start));
+      strip.innerHTML = order.map(function (i) {
+        var p = photos[i];
+        return '<button class="g-item" type="button" data-g="' + i + '" aria-label="Open photo ' + (i + 1) + ' of ' + photos.length + (p.caption ? ': ' + esc(p.caption) : '') + '"><img src="images/gallery/' + esc(p.file) + '" alt="' + esc(p.caption || 'KALOBEAUTY client work') + '" decoding="async">' + (p.caption ? '<span class="g-cap">' + esc(p.caption) + '</span>' : '') + '</button>';
+      }).join('');
+      strip.scrollLeft = 0;
+      // Hide any photo whose file is missing
+      Array.prototype.forEach.call(strip.querySelectorAll('img'), function (img) {
+        img.addEventListener('error', function () { var b = img.closest('.g-item'); if (b) b.style.display = 'none'; });
+      });
+    }
+    build();
+    var prev = el('g-prev'), next = el('g-next');
+    function step(d) { start = (start + d + photos.length) % photos.length; build(); }
+    prev.addEventListener('click', function () { step(-1); });
+    next.addEventListener('click', function () { step(1); });
+
+    function show(i) {
+      cur = (i + photos.length) % photos.length;
+      var p = photos[cur];
+      lbImg.src = 'images/gallery/' + p.file;
+      lbImg.alt = p.caption || 'KALOBEAUTY client work';
+      lbCap.textContent = p.caption || '';
+    }
+    function open(i, from) {
+      opener = from; show(i); lb.hidden = false; document.body.classList.add('lb-open');
+      el('lb-close').focus();
+    }
+    function close() {
+      lb.hidden = true; document.body.classList.remove('lb-open');
+      if (opener) { opener.focus(); var b = opener; b.scrollIntoView && b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+    }
+    strip.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-g]'); if (b) open(+b.getAttribute('data-g'), b);
+    });
+    el('lb-close').addEventListener('click', close);
+    el('lb-prev').addEventListener('click', function () { show(cur - 1); });
+    el('lb-next').addEventListener('click', function () { show(cur + 1); });
+    lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+    document.addEventListener('keydown', function (e) {
+      if (lb.hidden) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowLeft') show(cur - 1);
+      else if (e.key === 'ArrowRight') show(cur + 1);
+      else if (e.key === 'Tab') {
+        var f = [el('lb-close'), el('lb-prev'), el('lb-next')], i = f.indexOf(document.activeElement);
+        e.preventDefault(); f[(i + (e.shiftKey ? 2 : 1)) % 3].focus();
+      }
+    });
+    // Swipe on touch screens
+    var sx = null;
+    lb.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchend', function (e) {
+      if (sx === null) return;
+      var dx = e.changedTouches[0].clientX - sx; sx = null;
+      if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+    });
+  })();
+
   render();
 })();
