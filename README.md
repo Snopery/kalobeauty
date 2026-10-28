@@ -1,5 +1,7 @@
 # KALOBEAUTY website
 
+Test link: https://snopery.github.io/kalobeauty/#services
+
 ```
 kalobeauty-site/
   index.html          page layout (leave alone)
@@ -61,4 +63,7 @@ Open the page. If a line in `services.js` is missing something or mistyped, a ye
 Top of `css/style.css`.
 
 ## Preview and publish
+Test link (live site): https://snopery.github.io/kalobeauty/#services
+After you upload a change, wait a minute or two, then refresh that link (Ctrl+Shift+R, or Cmd+Shift+R on Mac) to see it.
+
 Preview: double-click `index.html`. Publish (GitHub Pages): upload the folder contents keeping the folders, then Settings > Pages > deploy from `main` / root. After an edit, upload the changed file again.
