@@ -64,6 +64,12 @@ Open the page. If a line in `services.js` is missing something or mistyped, a ye
 ## Instagram link
 The Instagram icon in the footer uses the `Instagram link:` line at the top of `data/services.js`. Change the address there, or delete the line to hide the icon.
 
+## If a change doesn't show on the live site
+1. Make sure you uploaded every changed file (keep the folders: css/, js/, data/, images/).
+2. Wait a minute or two for GitHub Pages to finish publishing.
+3. Hard refresh the page: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac). Browsers keep old copies of the files for a few minutes.
+4. Still old? In `index.html` change `?v=3` to `?v=4` on the three lines near the bottom and the top (css, services.js, app.js), then upload `index.html` again. This forces browsers to fetch new copies.
+
 ## Colours and fonts
 Top of `css/style.css`.
 

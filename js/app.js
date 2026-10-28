@@ -93,11 +93,18 @@
   if (ig) { if (K.instagram) ig.href = K.instagram; else ig.style.display = 'none'; }
 
 
-  // Briefly highlights the area a navigation button takes you to
+  // Briefly highlights the area a navigation button takes you to.
+  // Uses the browser's animation API directly, so it does not depend on the stylesheet.
   function flash(nodes) {
+    var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     Array.prototype.forEach.call(nodes, function (n) {
-      n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash');
-      clearTimeout(n._kbT); n._kbT = setTimeout(function () { n.classList.remove('flash'); }, 1700);
+      if (!n) return;
+      if (n._kbA) n._kbA.cancel();
+      var ring = function (a, b) { return 'inset 0 0 0 0 transparent, 0 0 0 ' + a + 'px rgba(143,75,87,' + b + '), 0 0 ' + (a * 5) + 'px ' + a + 'px rgba(143,75,87,' + (b / 2) + ')'; };
+      var frames = calm
+        ? [{ outline: '3px solid #8F4B57', outlineOffset: '3px' }, { outline: '3px solid #8F4B57', outlineOffset: '3px' }]
+        : [{ boxShadow: ring(0, 0) }, { boxShadow: ring(6, 0.65), offset: 0.2 }, { boxShadow: ring(6, 0.5), offset: 0.7 }, { boxShadow: ring(0, 0) }];
+      if (n.animate) n._kbA = n.animate(frames, { duration: 1800, delay: 150, easing: 'ease-out' });
     });
   }
   Array.prototype.forEach.call(document.querySelectorAll('.nav-btn[href]'), function (a) {
