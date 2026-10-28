@@ -66,6 +66,10 @@ h1,h2,h3{font-family:var(--serif);font-weight:300;margin:0;text-wrap:balance}
 footer{background:var(--ink);color:var(--bg)}
 footer .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;padding-top:clamp(24px,3.5vw,40px);padding-bottom:clamp(24px,3.5vw,40px)}
 footer .brand{color:var(--bg);min-height:0}
+footer .f-actions{display:flex;align-items:center;gap:12px}
+.ig{box-sizing:border-box;width:48px;height:48px;border-radius:999px;border:1.5px solid var(--bg);color:var(--bg);display:inline-flex;align-items:center;justify-content:center}
+.ig:hover{background:var(--bg);color:var(--ink)}
+.ig:active{transform:scale(.94)}
 footer small{display:block;color:#D9C5C6;font-size:15px}
 footer a:focus-visible{outline-color:var(--bg)}
 .g-arrow{width:44px;height:44px;border-radius:999px;border:1px solid #BFA2A6;background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}

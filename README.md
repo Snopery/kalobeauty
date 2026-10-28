@@ -61,6 +61,9 @@ Edit the `REFILL GUIDE` section at the bottom. Each `OPTION:` points to a servic
 ## If something looks wrong
 Open the page. If a line in `services.js` is missing something or mistyped, a yellow box appears at the top naming the line. Fix it and refresh. Rules: keep the words before each colon as written, and don't use the backtick character ` anywhere.
 
+## Instagram link
+The Instagram icon in the footer uses the `Instagram link:` line at the top of `data/services.js`. Change the address there, or delete the line to hide the icon.
+
 ## Colours and fonts
 Top of `css/style.css`.
 

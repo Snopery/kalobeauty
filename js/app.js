@@ -6,7 +6,7 @@
 
   // Reads the plain-text content in data/services.js
   function parse(text) {
-    var K = { bookUrl: '', calendarId: '', categories: [], services: [], refillGuide: null, gallery: null };
+    var K = { bookUrl: '', instagram: '', calendarId: '', categories: [], services: [], refillGuide: null, gallery: null };
     var cat = null, svc = null, opt = null, inRefill = false, inGallery = false, gpic = null, line;
     var lines = String(text || '').split(/\r?\n/);
     function problem(n, msg) { PROBLEMS.push('Line ' + n + ': ' + msg); }
@@ -37,6 +37,7 @@
         return;
       }
       if (key === 'booking link') K.bookUrl = val;
+      else if (key === 'instagram link') K.instagram = val;
       else if (key === 'calendar number') K.calendarId = val;
       else if (key === 'category') { cat = { id: 'c' + K.categories.length, label: val, note: '' }; K.categories.push(cat); svc = null; }
       else if (key === 'service') {
@@ -86,6 +87,10 @@
     box.innerHTML = '<strong>Content file needs attention (data/services.js):</strong><ul style="margin:6px 0 0 18px;padding:0">' + PROBLEMS.map(function (p) { return '<li>' + p.replace(/[&<>]/g, '') + '</li>'; }).join('') + '</ul>';
     document.body.insertBefore(box, document.body.firstChild);
   }
+
+  // Instagram icon in the footer: uses the link from data/services.js (hidden if blank)
+  var ig = document.getElementById('ig-link');
+  if (ig) { if (K.instagram) ig.href = K.instagram; else ig.style.display = 'none'; }
 
   // Make the header and footer Book buttons use the booking link
   Array.prototype.forEach.call(document.querySelectorAll('[data-book]'), function (a) { a.href = BOOK; });

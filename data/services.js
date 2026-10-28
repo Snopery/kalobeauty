@@ -36,6 +36,7 @@ window.KALO_CONTENT = `
 
 # ---------------- SETTINGS ----------------
 Booking link: https://kalobeauty.as.me/schedule/e03f0241/category/X19hbGxfXw%3D%3D
+Instagram link: https://www.instagram.com/kalobeauty_/
 Calendar number: 7815696
 
 
