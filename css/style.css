@@ -9,7 +9,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--rose);outline-offse
 header .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 24px;padding-top:10px;padding-bottom:10px}
 .brand{font-family:var(--serif);font-size:20px;letter-spacing:.34em;color:var(--ink);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
 nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.nav-btn{box-sizing:border-box;color:var(--ink);text-decoration:none;min-height:44px;padding:0 20px;border-radius:999px;border:1.5px solid var(--ink);background:var(--paper);display:inline-flex;align-items:center;font-weight:600;letter-spacing:.03em}
+.nav-btn{box-sizing:border-box;color:var(--ink);text-decoration:none;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--ink);background:var(--paper);display:inline-flex;align-items:center;font-size:13px;text-transform:uppercase;font-weight:600;letter-spacing:.1em}
 .nav-btn:hover{background:var(--ink);color:var(--paper)}
 .nav-btn:active{transform:scale(.97)}
 .nav-link{color:var(--ink);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
