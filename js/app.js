@@ -215,36 +215,61 @@
   });
 
   if (!K.refillGuide) { var rf = el('refill'); if (rf) rf.style.display = 'none'; var rn = el('refill-nav'); if (rn) rn.style.display = 'none'; }
-  // ---------- Gallery ----------
+  // ---------- Gallery (slide-out drawer) ----------
   (function () {
-    var sec = el('gallery');
     var G = K.gallery;
-    if (!G) { if (sec) sec.style.display = 'none'; var gn = el('gallery-nav'); if (gn) gn.style.display = 'none'; return; }
-    var strip = el('g-strip'), lb = el('lb'), lbImg = el('lb-img'), lbCap = el('lb-cap');
-    var cur = 0, opener = null;
-    el('gallery-title').textContent = G.title; if (!G.title) el('gallery-title').style.display = 'none';
-    var photos = G.photos.slice();
-    var start = 0;
-    // Draws the strip starting at photo "start" and wrapping round, so it loops forever
-    function build() {
-      var order = photos.map(function (p, i) { return i; });
-      order = order.slice(start).concat(order.slice(0, start));
-      strip.innerHTML = order.map(function (i) {
-        var p = photos[i];
-        return '<button class="g-item" type="button" data-g="' + i + '" aria-label="Open photo ' + (i + 1) + ' of ' + photos.length + (p.caption ? ': ' + esc(p.caption) : '') + '"><img src="images/gallery/' + esc(p.file) + '" alt="' + esc(p.caption || 'KALOBEAUTY client work') + '" decoding="async">' + (p.caption ? '<span class="g-cap">' + esc(p.caption) + '</span>' : '') + '</button>';
-      }).join('');
-      strip.scrollLeft = 0;
-      // Hide any photo whose file is missing
-      Array.prototype.forEach.call(strip.querySelectorAll('img'), function (img) {
-        img.addEventListener('error', function () { var b = img.closest('.g-item'); if (b) b.style.display = 'none'; });
-      });
+    var handle = el('g-handle'), navBtn = el('gallery-nav'), drawer = el('g-drawer'), scrim = el('g-scrim'), grid = el('g-strip');
+    if (!G) {
+      [handle, navBtn, drawer, scrim].forEach(function (n) { if (n) n.style.display = 'none'; });
+      return;
     }
-    build();
-    var prev = el('g-prev'), next = el('g-next');
-    function step(d) { start = (start + d + photos.length) % photos.length; build(); }
-    prev.addEventListener('click', function () { step(-1); });
-    next.addEventListener('click', function () { step(1); });
+    var lb = el('lb'), lbImg = el('lb-img'), lbCap = el('lb-cap');
+    var photos = G.photos.slice();
+    var cur = 0, opener = null, isOpen = false;
 
+    grid.innerHTML = photos.map(function (p, i) {
+      return '<button class="g-item" type="button" data-g="' + i + '" aria-label="Open photo ' + (i + 1) + ' of ' + photos.length + (p.caption ? ': ' + esc(p.caption) : '') + '"><img src="images/gallery/' + esc(p.file) + '" alt="' + esc(p.caption || 'KALOBEAUTY client work') + '" loading="lazy" decoding="async">' + (p.caption ? '<span class="g-cap">' + esc(p.caption) + '</span>' : '') + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(grid.querySelectorAll('img'), function (img) {
+      img.addEventListener('error', function () { var b = img.closest('.g-item'); if (b) b.style.display = 'none'; });
+    });
+
+    var from = null;
+    function openDrawer(src) {
+      from = src || handle; isOpen = true;
+      drawer.classList.add('open'); scrim.classList.add('open'); handle.classList.add('hide');
+      drawer.setAttribute('aria-hidden', 'false'); handle.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('drawer-open');
+      setTimeout(function () { el('g-close').focus(); }, 60);
+    }
+    function closeDrawer() {
+      isOpen = false;
+      drawer.classList.remove('open'); scrim.classList.remove('open'); handle.classList.remove('hide');
+      drawer.setAttribute('aria-hidden', 'true'); handle.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('drawer-open');
+      if (from) from.focus();
+    }
+    handle.addEventListener('click', function () { openDrawer(handle); });
+    if (navBtn) navBtn.addEventListener('click', function () { openDrawer(navBtn); });
+    el('g-close').addEventListener('click', closeDrawer);
+    scrim.addEventListener('click', closeDrawer);
+
+    // Pull the tab across on touch screens, or swipe the drawer back to close it
+    var tx = null;
+    handle.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; }, { passive: true });
+    handle.addEventListener('touchmove', function (e) {
+      if (tx !== null && tx - e.touches[0].clientX > 30) { tx = null; openDrawer(handle); }
+    }, { passive: true });
+    handle.addEventListener('touchend', function () { tx = null; });
+    var dx = null;
+    drawer.addEventListener('touchstart', function (e) { dx = e.touches[0].clientX; }, { passive: true });
+    drawer.addEventListener('touchend', function (e) {
+      if (dx === null) return;
+      var d = e.changedTouches[0].clientX - dx; dx = null;
+      if (d > 70) closeDrawer();
+    });
+
+    // Full-screen viewer (loops)
     function show(i) {
       cur = (i + photos.length) % photos.length;
       var p = photos[cur];
@@ -252,38 +277,40 @@
       lbImg.alt = p.caption || 'KALOBEAUTY client work';
       lbCap.textContent = p.caption || '';
     }
-    function open(i, from) {
-      opener = from; show(i); lb.hidden = false; document.body.classList.add('lb-open');
-      el('lb-close').focus();
-    }
-    function close() {
-      lb.hidden = true; document.body.classList.remove('lb-open');
-      if (opener) { opener.focus(); var b = opener; b.scrollIntoView && b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
-    }
-    strip.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-g]'); if (b) open(+b.getAttribute('data-g'), b);
+    function openLb(i, b) { opener = b; show(i); lb.hidden = false; el('lb-close').focus(); }
+    function closeLb() { lb.hidden = true; if (opener) opener.focus(); }
+    grid.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-g]'); if (b) openLb(+b.getAttribute('data-g'), b);
     });
-    el('lb-close').addEventListener('click', close);
+    el('lb-close').addEventListener('click', closeLb);
     el('lb-prev').addEventListener('click', function () { show(cur - 1); });
     el('lb-next').addEventListener('click', function () { show(cur + 1); });
-    lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+    lb.addEventListener('click', function (e) { if (e.target === lb) closeLb(); });
     document.addEventListener('keydown', function (e) {
-      if (lb.hidden) return;
-      if (e.key === 'Escape') close();
-      else if (e.key === 'ArrowLeft') show(cur - 1);
-      else if (e.key === 'ArrowRight') show(cur + 1);
-      else if (e.key === 'Tab') {
-        var f = [el('lb-close'), el('lb-prev'), el('lb-next')], i = f.indexOf(document.activeElement);
-        e.preventDefault(); f[(i + (e.shiftKey ? 2 : 1)) % 3].focus();
+      if (!lb.hidden) {
+        if (e.key === 'Escape') closeLb();
+        else if (e.key === 'ArrowLeft') show(cur - 1);
+        else if (e.key === 'ArrowRight') show(cur + 1);
+        else if (e.key === 'Tab') {
+          var f = [el('lb-close'), el('lb-prev'), el('lb-next')], i = f.indexOf(document.activeElement);
+          e.preventDefault(); f[(i + (e.shiftKey ? 2 : 1)) % 3].focus();
+        }
+      } else if (isOpen) {
+        if (e.key === 'Escape') closeDrawer();
+        else if (e.key === 'Tab') {
+          var items = Array.prototype.slice.call(drawer.querySelectorAll('button')).filter(function (b) { return b.style.display !== 'none'; });
+          var k = items.indexOf(document.activeElement);
+          if (e.shiftKey && k <= 0) { e.preventDefault(); items[items.length - 1].focus(); }
+          else if (!e.shiftKey && k === items.length - 1) { e.preventDefault(); items[0].focus(); }
+        }
       }
     });
-    // Swipe on touch screens
     var sx = null;
     lb.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; }, { passive: true });
     lb.addEventListener('touchend', function (e) {
       if (sx === null) return;
-      var dx = e.changedTouches[0].clientX - sx; sx = null;
-      if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+      var d = e.changedTouches[0].clientX - sx; sx = null;
+      if (Math.abs(d) > 50) show(cur + (d < 0 ? 1 : -1));
     });
   })();
 

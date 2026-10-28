@@ -205,7 +205,7 @@ Badge: New clients only
 Description: The signature Korean lash lift and tint, completed with a luxury eyebrow sculpt, wax and dye.
 
 # ======================================================
-# GALLERY (the scrolling photo strip, "The work")
+# GALLERY (the slide-out side panel)
 # Put photo files in the images/gallery/ folder.
 # Each Photo: line adds one photo, in this order. Caption: is optional
 # and applies to the Photo: line above it. Delete a Photo: line to remove it.

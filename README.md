@@ -46,7 +46,9 @@ No photo? Leave out the Photo line and add `Icon: lash` (or refill, removal, tin
 ## Add, rename, remove or reorder a category
 Each `CATEGORY:` line is a button. Add `Note:` underneath for the small line shown under the tiles. Order in the file = order on the site.
 
-## Photo gallery (the scrolling photo strip)
+## Photo gallery (the slide-out side panel)
+A dark "Gallery" tab sits on the right edge of the page. Tap it (or pull it left on a phone) and a panel slides across with the photos. Tap a photo to see it full screen. The Gallery button in the top navigation opens it too.
+
 1. Put photos in `images/gallery/` (JPG, about 1200 px on the long side, under 200 KB each).
 2. In `data/services.js`, find the `GALLERY` section and add one line per photo: `Photo: my-photo.jpg`.
 3. Optional: add `Title: The work` right under `GALLERY` to show a heading above the strip.
