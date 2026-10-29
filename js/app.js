@@ -124,7 +124,7 @@
       if (n.animate) n._kbA = n.animate(frames, { duration: 1800, delay: 150, easing: 'ease-out' });
     });
   }
-  Array.prototype.forEach.call(document.querySelectorAll('.nav-btn[href]'), function (a) {
+  Array.prototype.forEach.call(document.querySelectorAll('.menu-link[href]'), function (a) {
     a.addEventListener('click', function () {
       var id = a.getAttribute('href');
       var t = id === '#services' ? document.querySelectorAll('.panels .panel') : id === '#refill' ? document.querySelectorAll('.refill-box') : id === '#training' ? document.querySelectorAll('.t-card') : [];
@@ -359,6 +359,26 @@
       var d = e.changedTouches[0].clientX - sx; sx = null;
       if (Math.abs(d) > 50) show(cur + (d < 0 ? 1 : -1));
     });
+  })();
+
+  // ---------- Collapsing menu ----------
+  (function () {
+    var btn = el('menu-btn'), panel = el('menu-panel');
+    if (!btn || !panel) return;
+    function setOpen(o, back) {
+      panel.classList.toggle('open', o);
+      btn.setAttribute('aria-expanded', o ? 'true' : 'false');
+      if (!o && back) btn.focus();
+    }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var o = !panel.classList.contains('open');
+      setOpen(o);
+      if (o) { var f = panel.querySelector('.menu-link:not([style*="display: none"])'); if (f) f.focus(); }
+    });
+    panel.addEventListener('click', function (e) { if (e.target.closest('.menu-link')) setOpen(false); });
+    document.addEventListener('click', function (e) { if (!panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) setOpen(false, true); });
   })();
 
   // ---------- Training & education ----------
