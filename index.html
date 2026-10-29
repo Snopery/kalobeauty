@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&amp;family=Source+Sans+3:wght@400;600&amp;display=swap">
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 <header><div class="wrap">
@@ -16,6 +16,7 @@
 <nav aria-label="Page sections">
 <a class="nav-btn" href="#services">Services</a>
 <a class="nav-btn" href="#refill" id="refill-nav">Refill guide</a>
+<a class="nav-btn" href="#training" id="training-nav">Training</a>
 <button class="nav-btn" type="button" id="gallery-nav" data-open-gallery>Gallery</button>
 </nav>
 </div></header>
@@ -47,6 +48,18 @@
 </div>
 </section>
 
+<section id="training" class="wrap training" aria-labelledby="t-title">
+<div class="t-card">
+<div class="t-photo" id="t-photo"><img id="t-img" alt="" loading="lazy" decoding="async"></div>
+<div class="t-body">
+<p class="eyebrow">Education</p>
+<h2 id="t-title"></h2>
+<p class="t-intro" id="t-intro"></p>
+<div class="tabs" id="t-tabs"></div>
+<div class="t-detail" id="t-detail"></div>
+</div>
+</div>
+</section>
 </main>
 
 <footer><div class="wrap">
@@ -81,7 +94,7 @@
 </div>
 
 <!-- Edit services in data/services.js, not here. -->
-<script src="data/services.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="data/services.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>

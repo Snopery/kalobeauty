@@ -68,6 +68,26 @@ h1,h2,h3{font-family:var(--serif);font-weight:300;margin:0;text-wrap:balance}
 .refill-box .tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
 .refill-card{flex:1 1 320px;min-width:0;background:var(--paper);border-radius:3px;padding:22px;display:flex;flex-direction:column;gap:14px}
 .refill-card h3{font-weight:400;font-size:24px;line-height:1.2}
+/* Training & education */
+.training{padding-bottom:clamp(28px,4vw,48px)}
+.t-card{display:flex;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.t-photo{position:relative;flex:1 1 280px;min-height:280px}
+.t-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block}
+.t-body{flex:1.5 1 420px;min-width:0;box-sizing:border-box;padding:clamp(20px,3vw,36px);display:flex;flex-direction:column;gap:14px;justify-content:center}
+.t-body .eyebrow{margin:0}
+.t-body h2{font-size:clamp(26px,3.2vw,38px);line-height:1.08;font-weight:300}
+.t-intro{margin:0;color:var(--muted);max-width:42em}
+.t-detail{display:flex;flex-direction:column;gap:14px;align-items:flex-start;padding-top:4px}
+.t-desc{margin:0;color:#3D2B2F;max-width:42em}
+.t-meta{margin:0;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #E1CDD0;border-bottom:1px solid #E1CDD0}
+.t-meta>div{padding:12px 10px 12px 12px;border-left:1px solid #E1CDD0}
+.t-meta>div:first-child{border-left:0;padding-left:0}
+.t-meta dt{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.t-meta dd{margin:2px 0 0;font-family:var(--serif);font-size:clamp(15px,2.4vw,20px);line-height:1.2}
+.t-inc{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 24px;width:100%}
+.t-inc li{display:flex;align-items:flex-start;gap:10px;font-size:15px;line-height:1.35}
+.t-inc svg{flex:0 0 auto;margin-top:2px;color:var(--rose)}
+.t-btn{padding:0 28px}
 footer{background:var(--ink);color:var(--bg)}
 footer .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;padding-top:clamp(24px,3.5vw,40px);padding-bottom:clamp(24px,3.5vw,40px)}
 footer .brand{color:var(--bg);min-height:0}

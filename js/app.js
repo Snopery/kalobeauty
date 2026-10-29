@@ -6,8 +6,8 @@
 
   // Reads the plain-text content in data/services.js
   function parse(text) {
-    var K = { bookUrl: '', instagram: '', calendarId: '', categories: [], services: [], refillGuide: null, gallery: null };
-    var cat = null, svc = null, opt = null, inRefill = false, inGallery = false, gpic = null, line;
+    var K = { bookUrl: '', instagram: '', calendarId: '', categories: [], services: [], refillGuide: null, gallery: null, training: null };
+    var cat = null, svc = null, opt = null, mode = '', gpic = null, course = null, line;
     var lines = String(text || '').split(/\r?\n/);
     function problem(n, msg) { PROBLEMS.push('Line ' + n + ': ' + msg); }
     lines.forEach(function (raw, i) {
@@ -16,17 +16,17 @@
       var m = line.match(/^([A-Za-z ]+?)\s*:\s*(.*)$/);
       var key = m ? m[1].toLowerCase() : line.toLowerCase();
       var val = m ? m[2].trim() : '';
-      if (key === 'gallery') { inGallery = true; inRefill = false; cat = svc = opt = null; K.gallery = { title: '', photos: [] }; return; }
-      if (inGallery) {
+      if (key === 'gallery') { mode = 'gallery'; cat = svc = opt = null; K.gallery = { title: '', photos: [] }; return; }
+      if (key === 'refill guide') { mode = 'refill'; cat = svc = opt = null; K.refillGuide = { title: '', question: '', options: [] }; return; }
+      if (key === 'training') { mode = 'training'; cat = svc = opt = null; K.training = { title: '', intro: '', link: '', button: 'Enquire now', photo: '', courses: [] }; return; }
+      if (mode === 'gallery') {
         if (key === 'title') K.gallery.title = val;
         else if (key === 'photo') { gpic = { file: val, caption: '' }; K.gallery.photos.push(gpic); }
         else if (key === 'caption' && gpic) gpic.caption = val;
-        else if (key === 'refill guide') { /* handled below */ }
-        else { problem(i + 1, 'Not understood in the gallery: "' + line + '"'); return; }
-        if (key !== 'refill guide') return;
+        else problem(i + 1, 'Not understood in the gallery: "' + line + '"');
+        return;
       }
-      if (key === 'refill guide') { inRefill = true; inGallery = false; cat = svc = opt = null; K.refillGuide = { title: '', question: '', options: [] }; return; }
-      if (inRefill) {
+      if (mode === 'refill') {
         var g = K.refillGuide;
         if (key === 'title') g.title = val;
         else if (key === 'question') g.question = val;
@@ -34,6 +34,22 @@
         else if (opt && key === 'service') opt.service = val;
         else if (opt && key === 'note') opt.note = val;
         else problem(i + 1, 'Not understood in the refill guide: "' + line + '"');
+        return;
+      }
+      if (mode === 'training') {
+        var T = K.training;
+        if (key === 'title') T.title = val;
+        else if (key === 'intro') T.intro = val;
+        else if (key === 'enquiry link') T.link = val;
+        else if (key === 'button') T.button = val;
+        else if (key === 'photo') T.photo = val;
+        else if (key === 'course') { course = { name: val, duration: '', price: '', size: '', includes: [], description: '' }; T.courses.push(course); }
+        else if (course && key === 'duration') course.duration = val;
+        else if (course && key === 'price') course.price = val;
+        else if (course && key === 'class size') course.size = val;
+        else if (course && key === 'includes') course.includes = val.split('|').map(function (x) { return x.trim(); }).filter(Boolean);
+        else if (course && key === 'description') course.description = val;
+        else problem(i + 1, 'Not understood in the training section: "' + line + '"');
         return;
       }
       if (key === 'booking link') K.bookUrl = val;
@@ -67,6 +83,7 @@
     });
     if (K.refillGuide && !K.refillGuide.options.length) K.refillGuide = null;
     if (K.gallery && !K.gallery.photos.length) K.gallery = null;
+    if (K.training && !K.training.courses.length) K.training = null;
     return K;
   }
 
@@ -110,7 +127,7 @@
   Array.prototype.forEach.call(document.querySelectorAll('.nav-btn[href]'), function (a) {
     a.addEventListener('click', function () {
       var id = a.getAttribute('href');
-      var t = id === '#services' ? document.querySelectorAll('.panels .panel') : id === '#refill' ? document.querySelectorAll('.refill-box') : [];
+      var t = id === '#services' ? document.querySelectorAll('.panels .panel') : id === '#refill' ? document.querySelectorAll('.refill-box') : id === '#training' ? document.querySelectorAll('.t-card') : [];
       flash(t);
     });
   });
@@ -342,6 +359,36 @@
       var d = e.changedTouches[0].clientX - sx; sx = null;
       if (Math.abs(d) > 50) show(cur + (d < 0 ? 1 : -1));
     });
+  })();
+
+  // ---------- Training & education ----------
+  (function () {
+    var T = K.training, sec = el('training'), nav = el('training-nav');
+    if (!T) { if (sec) sec.style.display = 'none'; if (nav) nav.style.display = 'none'; return; }
+    var idx = 0;
+    var TICK = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    el('t-title').textContent = T.title;
+    el('t-intro').textContent = T.intro;
+    if (T.photo) { var im = el('t-img'); im.src = 'images/gallery/' + T.photo; im.onerror = function () { im.parentNode.style.display = 'none'; }; }
+    else el('t-photo').style.display = 'none';
+    function draw() {
+      el('t-tabs').innerHTML = T.courses.map(function (c, i) {
+        return '<button class="tab" type="button" data-t="' + i + '" aria-pressed="' + (i === idx) + '">' + esc(c.name) + '</button>';
+      }).join('');
+      var c = T.courses[idx];
+      var meta = [['Duration', c.duration], ['Class size', c.size], ['Tuition', c.price]].filter(function (m) { return m[1]; });
+      el('t-detail').innerHTML =
+        (c.description ? '<p class="t-desc">' + esc(c.description) + '</p>' : '') +
+        (meta.length ? '<dl class="t-meta">' + meta.map(function (m) { return '<div><dt>' + m[0] + '</dt><dd>' + esc(m[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+        (c.includes.length ? '<ul class="t-inc">' + c.includes.map(function (x) { return '<li>' + TICK + '<span>' + esc(x) + '</span></li>'; }).join('') + '</ul>' : '') +
+        (T.link ? '<a class="btn t-btn" href="' + esc(T.link) + '" target="_blank" rel="noopener">' + esc(T.button) + ARROW + '</a>' : '');
+    }
+    el('t-tabs').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-t]'); if (!b) return;
+      idx = +b.getAttribute('data-t'); draw();
+      var again = el('t-tabs').querySelector('[data-t="' + idx + '"]'); if (again) again.focus();
+    });
+    draw();
   })();
 
   render();

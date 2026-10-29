@@ -221,6 +221,40 @@ Photo: gallery-06.jpg
 Photo: gallery-07.jpg
 
 # ======================================================
+# TRAINING & EDUCATION (the "Education" card near the bottom)
+# Fill in the [square bracket] parts with your real details.
+# Each COURSE: starts a new tab. Delete a course's lines to remove it.
+# Delete the whole TRAINING section to hide it (and its menu button).
+# Photo: is a file from images/gallery/. Enquiry link: is where the button goes.
+TRAINING
+Title: Train with KALOBEAUTY
+Intro: [One or two sentences about your training and who it is for.]
+Enquiry link: https://www.instagram.com/kalobeauty_/
+Button: Enquire now
+Photo: gallery-05.jpg
+
+COURSE: Lash extensions
+Duration: [e.g. 2 days]
+Class size: [e.g. Max 4 students]
+Price: [A$ price]
+Includes: [Professional kit] | [Hands-on practice on models] | [Printed manual] | [Ongoing support]
+Description: [Short summary of what students learn in this course.]
+
+COURSE: Lash lift
+Duration: [e.g. 1 day]
+Class size: [e.g. Max 4 students]
+Price: [A$ price]
+Includes: [Professional kit] | [Hands-on practice on models] | [Printed manual] | [Ongoing support]
+Description: [Short summary of what students learn in this course.]
+
+COURSE: Brow sculpt
+Duration: [e.g. 1 day]
+Class size: [e.g. Max 4 students]
+Price: [A$ price]
+Includes: [Professional kit] | [Hands-on practice on models] | [Printed manual] | [Ongoing support]
+Description: [Short summary of what students learn in this course.]
+
+# ======================================================
 # REFILL GUIDE (the 'Which refill do you need?' section)
 # Delete everything from the REFILL GUIDE line down to hide it.
 # 'Service:' must match a SERVICE: name above exactly.
