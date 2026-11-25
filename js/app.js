@@ -6,7 +6,7 @@
 
   // Reads the plain-text content in data/services.js
   function parse(text) {
-    var K = { bookUrl: '', instagram: '', calendarId: '', categories: [], services: [], refillGuide: null, gallery: null, training: null };
+    var K = { bookUrl: '', showTraining: true, showShop: true, instagram: '', calendarId: '', categories: [], services: [], refillGuide: null, gallery: null, training: null };
     var cat = null, svc = null, opt = null, mode = '', gpic = null, course = null, line;
     var lines = String(text || '').split(/\r?\n/);
     function problem(n, msg) { PROBLEMS.push('Line ' + n + ': ' + msg); }
@@ -54,6 +54,8 @@
       }
       if (key === 'booking link') K.bookUrl = val;
       else if (key === 'instagram link') K.instagram = val;
+      else if (key === 'show shop') K.showShop = ['no', 'off', 'false', 'hide'].indexOf(val.toLowerCase()) < 0;
+      else if (key === 'show training') K.showTraining = ['no', 'off', 'false', 'hide'].indexOf(val.toLowerCase()) < 0;
       else if (key === 'calendar number') K.calendarId = val;
       else if (key === 'category') { cat = { id: 'c' + K.categories.length, label: val, note: '' }; K.categories.push(cat); svc = null; }
       else if (key === 'service') {
@@ -117,9 +119,9 @@
     Array.prototype.forEach.call(nodes, function (n) {
       if (!n) return;
       if (n._kbA) n._kbA.cancel();
-      var ring = function (a, b) { return 'inset 0 0 0 0 transparent, 0 0 0 ' + a + 'px rgba(143,75,87,' + b + '), 0 0 ' + (a * 5) + 'px ' + a + 'px rgba(143,75,87,' + (b / 2) + ')'; };
+      var ring = function (a, b) { return 'inset 0 0 0 0 transparent, 0 0 0 ' + a + 'px rgba(122,92,62,' + b + '), 0 0 ' + (a * 5) + 'px ' + a + 'px rgba(122,92,62,' + (b / 2) + ')'; };
       var frames = calm
-        ? [{ outline: '3px solid #8F4B57', outlineOffset: '3px' }, { outline: '3px solid #8F4B57', outlineOffset: '3px' }]
+        ? [{ outline: '3px solid #6F5E4F', outlineOffset: '3px' }, { outline: '3px solid #6F5E4F', outlineOffset: '3px' }]
         : [{ boxShadow: ring(0, 0) }, { boxShadow: ring(6, 0.65), offset: 0.2 }, { boxShadow: ring(6, 0.5), offset: 0.7 }, { boxShadow: ring(0, 0) }];
       if (n.animate) n._kbA = n.animate(frames, { duration: 1800, delay: 150, easing: 'ease-out' });
     });
@@ -138,7 +140,7 @@
   Array.prototype.forEach.call(document.querySelectorAll('[data-book]'), function (a) { a.href = BOOK; });
 
   // Line drawings for services without a photo
-  var INK = '#1C1214', ROSE = '#8F4B57', LIGHT = '#F8F1F1';
+  var INK = '#111111', ROSE = '#6F5E4F', LIGHT = '#F6F4EF';
   function lashD(pick, dy, scale, cm) {
     var d = '', i = 0;
     for (var a = 198; a <= 342; a += 6, i++) {
@@ -361,6 +363,8 @@
     });
   })();
 
+  var shopNav = el('shop-nav'); if (shopNav && !K.showShop) shopNav.style.display = 'none';
+
   // ---------- Collapsing menu ----------
   (function () {
     var btn = el('menu-btn'), panel = el('menu-panel');
@@ -384,7 +388,7 @@
   // ---------- Training & education ----------
   (function () {
     var T = K.training, sec = el('training'), nav = el('training-nav');
-    if (!T) { if (sec) sec.style.display = 'none'; if (nav) nav.style.display = 'none'; return; }
+    if (!T || !K.showTraining) { if (sec) sec.style.display = 'none'; if (nav) nav.style.display = 'none'; return; }
     var idx = 0;
     var TICK = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
     el('t-title').textContent = T.title;

@@ -59,7 +59,7 @@ Photos can be portrait or landscape. Delete a Photo line to remove it, or delete
 The header has a compact MENU button. It opens a small numbered list (Services, Refill guide, Training, Gallery) and closes after a choice, by tapping outside it or pressing Esc. The Training and Refill guide entries disappear automatically if you delete those sections in `data/services.js`.
 
 ## Training and education
-The "Education" card near the bottom is the `TRAINING` section of `data/services.js`. Replace each [square bracket] with your real details: duration, class size, price, what is included and a short description. Each `COURSE:` becomes a tab. Add or delete courses by copying or removing their lines. `Enquiry link:` is where the button goes (currently your Instagram); `Photo:` is a file from `images/gallery/`. Delete the whole TRAINING section to hide the card and its menu button.
+The "Education" card near the bottom is the `TRAINING` section of `data/services.js`. Replace each [square bracket] with your real details: duration, class size, price, what is included and a short description. Each `COURSE:` becomes a tab. Add or delete courses by copying or removing their lines. `Enquiry link:` is where the button goes (currently your Instagram); `Photo:` is a file from `images/gallery/`. To hide the card and its menu entry without losing your details, set `Show training: no` at the top of `data/services.js`; change it to `yes` to bring it back.
 
 ## Refill guide
 Edit the `REFILL GUIDE` section at the bottom. Each `OPTION:` points to a service by its exact `SERVICE:` name, so the price and link come from that service. Delete the whole section to hide it.

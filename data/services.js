@@ -37,6 +37,10 @@ window.KALO_CONTENT = `
 # ---------------- SETTINGS ----------------
 Booking link: https://kalobeauty.as.me/schedule/e03f0241/category/X19hbGxfXw%3D%3D
 Instagram link: https://www.instagram.com/kalobeauty_/
+# Show the Education (training) section? Write yes or no. Your course details below are kept either way.
+Show training: no
+# Show the Shop link in the menu? Write yes or no. Turn it off until your Stripe shop is ready.
+Show shop: yes
 Calendar number: 7815696
 
 
@@ -224,7 +228,7 @@ Photo: gallery-07.jpg
 # TRAINING & EDUCATION (the "Education" card near the bottom)
 # Fill in the [square bracket] parts with your real details.
 # Each COURSE: starts a new tab. Delete a course's lines to remove it.
-# Delete the whole TRAINING section to hide it (and its menu button).
+# To hide it for now, set "Show training: no" at the top of this file (your details stay saved).
 # Photo: is a file from images/gallery/. Enquiry link: is where the button goes.
 TRAINING
 Title: Train with KALOBEAUTY
