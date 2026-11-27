@@ -237,3 +237,4 @@ body.lb-open{overflow:hidden}
 .p-card.is-out .p-art svg,.p-card.is-out .p-art img{opacity:.4}
 .p-card.is-out .p-price{color:var(--muted)}
 .p-body .stock{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.p-empty{grid-column:1/-1;margin:0;padding:32px 0;color:var(--muted);font-size:18px}

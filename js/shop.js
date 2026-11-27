@@ -6,7 +6,7 @@
 
   // ---------- Read data/shop.js ----------
   function parse(text) {
-    var S = { title: 'Shop', intro: '', demo: true, symbol: 'A$', shipNote: '', endpoint: '/api/checkout', stockEndpoint: '/api/stock', max: 10, low: 3, showUpTo: 10, products: [] };
+    var S = { title: 'Shop', intro: '', demo: true, symbol: 'A$', shipNote: '', endpoint: '/api/checkout', stockEndpoint: '/api/stock', productsEndpoint: '/api/products', max: 10, low: 3, showUpTo: 10, products: [] };
     var p = null;
     String(text || '').split(/\r?\n/).forEach(function (raw, i) {
       var line = raw.trim();
@@ -21,7 +21,7 @@
       else if (key === 'currency symbol' && !p) S.symbol = val;
       else if (key === 'shipping note' && !p) S.shipNote = val;
       else if (key === 'checkout endpoint' && !p) S.endpoint = val;
-      else if (key === 'stock endpoint' && !p) S.stockEndpoint = val;
+      else if (key === 'products endpoint' && !p) S.productsEndpoint = val;
       else if (key === 'stock display limit' && !p) S.showUpTo = Math.max(1, parseInt(val, 10) || 10);
       else if (key === 'low stock warning' && !p) S.low = Math.max(0, parseInt(val, 10) || 0);
       else if (p && key === 'backorder') p.backorder = ['yes', 'true', 'on'].indexOf(val.toLowerCase()) >= 0;
@@ -36,17 +36,17 @@
       else if (p && key === 'sold out') p.soldOut = ['yes', 'true', 'on'].indexOf(val.toLowerCase()) >= 0;
       else PROBLEMS.push('Line ' + (i + 1) + ': Not understood: "' + line + '"');
     });
-    S.products.forEach(function (x) {
-      if (!x.price) PROBLEMS.push('"' + x.name + '" is missing a Price.');
-      if (!S.demo && !/^price_[A-Za-z0-9]+$/.test(x.priceId) || (!S.demo && /REPLACE/.test(x.priceId))) PROBLEMS.push('"' + x.name + '" needs a real Stripe price ID (or set Demo mode: yes).');
-    });
+    if (S.demo) S.products.forEach(function (x) { if (!x.price) PROBLEMS.push('"' + x.name + '" is missing a Price.'); });
     return S;
   }
   var S = parse(window.KALO_SHOP_CONTENT);
+  // Demo mode uses the sample products written in data/shop.js. Live mode ignores them and
+  // loads the real products from Stripe (see loadProducts below).
   var byId = {};
-  S.products.forEach(function (x) { byId[x.id] = x; });
+  function setProducts(list) { S.products = list; byId = {}; list.forEach(function (x) { byId[x.id] = x; }); }
+  setProducts(S.demo ? S.products : []);
 
-  // Stock: null means not tracked. Live stock comes from Stripe via /api/stock.
+  // Stock: null means not tracked. Live stock comes from Stripe via /api/products.
   function out(x) { return x.soldOut || (x.stock === 0 && !x.backorder); }
   function onBack(x) { return !x.soldOut && x.backorder && x.stock === 0; }
   function cap(x) { return (x.stock == null || x.backorder) ? S.max : Math.min(S.max, x.stock); }
@@ -88,13 +88,15 @@
     return s + '</svg>';
   }
   function media(x, alt) {
-    return x.photo ? '<img src="images/shop/' + esc(x.photo) + '" alt="' + esc(alt || '') + '" loading="lazy" onerror="this.outerHTML=window.KALO_SHOP_ART(\'' + esc(x.icon) + '\')">' : art(x.icon);
+    var src = x.imageUrl || (x.photo ? 'images/shop/' + x.photo : '');
+    return src ? '<img src="' + esc(src) + '" alt="' + esc(alt || '') + '" loading="lazy" onerror="this.outerHTML=window.KALO_SHOP_ART(\'' + esc(x.icon) + '\')">' : art(x.icon);
   }
   window.KALO_SHOP_ART = art;
 
   // ---------- Bag (saved in this browser) ----------
   var bag = [];
-  try { bag = JSON.parse(localStorage.getItem('kalo-bag') || '[]').filter(function (l) { return byId[l.id] && l.qty > 0; }); } catch (e) { bag = []; }
+  function restoreBag() { try { bag = JSON.parse(localStorage.getItem('kalo-bag') || '[]').filter(function (l) { return byId[l.id] && l.qty > 0; }); } catch (e) { bag = []; } }
+  restoreBag();
   function save() { try { localStorage.setItem('kalo-bag', JSON.stringify(bag)); } catch (e) {} }
   function qtyOf(id) { var l = bag.filter(function (x) { return x.id === id; })[0]; return l ? l.qty : 0; }
   function setQty(id, q) {
@@ -112,7 +114,9 @@
   if (S.demo) $('demo-band').hidden = false;
   document.title = S.title + ' | KALOBEAUTY';
 
+  var gridNote = S.demo ? '' : 'Loading products...';
   function drawGrid() {
+    if (!S.products.length) { $('p-grid').innerHTML = gridNote ? '<p class="p-empty">' + esc(gridNote) + '</p>' : ''; return; }
     $('p-grid').innerHTML = S.products.map(function (x) {
       var left = '';
       if (x.stock != null && x.stock > 0) left = x.stock <= S.low ? '<span class="low">Only ' + x.stock + ' left</span>' : '<span class="stock">' + (x.stock > S.showUpTo ? S.showUpTo + '+' : x.stock) + ' in stock</span>';
@@ -132,7 +136,7 @@
 
   var TICKER = 0;
   function drawBag() {
-    bag = bag.filter(function (l) { var x = byId[l.id]; if (out(x)) return false; if (l.qty > cap(x)) l.qty = cap(x); return true; });
+    bag = bag.filter(function (l) { var x = byId[l.id]; if (!x || out(x)) return false; if (l.qty > cap(x)) l.qty = cap(x); return true; });
     var n = count();
     $('bag-count').textContent = n;
     $('bag-count').classList.toggle('has', n > 0);
@@ -223,20 +227,26 @@
     if (S.demo) openDemo(); else liveCheckout(b);
   });
 
-  // Live stock from Stripe (through /api/stock)
-  function loadStock() {
+  // Live mode: the product list, prices, photos and stock all come from Stripe (through /api/products)
+  function loadProducts() {
     if (S.demo) return;
-    var ids = S.products.map(function (x) { return x.priceId; }).filter(function (v) { return /^price_[A-Za-z0-9]+$/.test(v); });
-    if (!ids.length) return;
-    fetch(S.stockEndpoint + '?prices=' + ids.join(','))
-      .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (m) {
-        S.products.forEach(function (x) { var v = m[x.priceId]; x.stock = (v && typeof v.stock === 'number') ? v.stock : null; if (v) x.backorder = !!v.backorder; });
-        drawGrid(); drawBag();
+    fetch(S.productsEndpoint, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('bad'); return r.json(); })
+      .then(function (j) {
+        var list = (j.products || []).map(function (p) {
+          var icon = String(p.icon || 'kit').toLowerCase();
+          return { id: p.id, priceId: p.priceId, name: p.name, price: p.price, desc: p.description || '', imageUrl: p.image || '', photo: '', badge: p.badge || '', icon: ICONS.indexOf(icon) >= 0 ? icon : 'kit', soldOut: false, stock: typeof p.stock === 'number' ? p.stock : null, backorder: !!p.backorder, demoStock: null };
+        });
+        setProducts(list);
+        gridNote = list.length ? '' : 'No products yet. Please check back soon.';
+        restoreBag(); drawGrid(); drawBag();
       })
-      .catch(function () {});
+      .catch(function () {
+        if (!S.products.length) { gridNote = 'The shop could not load right now. Please try again in a moment.'; drawGrid(); }
+      });
   }
-  window.addEventListener('pageshow', loadStock);
+  var loadStock = loadProducts;
+  window.addEventListener('pageshow', function (e) { if (e.persisted) loadProducts(); });
 
   // Coming back from Stripe
   var st = (location.search.match(/[?&]status=(\w+)/) || [])[1];
@@ -264,5 +274,5 @@
   }
 
   drawBag();
-  loadStock();
+  loadProducts();
 })();
