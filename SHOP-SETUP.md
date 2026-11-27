@@ -1,3 +1,5 @@
+> Using separate dev (test) and live (main) Stripe settings? Follow STRIPE-ENVIRONMENTS-READ-ME.md and fill in data/stripe-ids.txt. That replaces steps 2 and 3 below for price IDs.
+
 # Turning on the KALOBEAUTY shop
 
 The shop page (`shop.html`) works straight away in **demo mode**: the bag works and checkout shows a pretend payment screen. Nothing is charged. Follow these steps to take real payments.

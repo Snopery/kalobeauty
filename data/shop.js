@@ -50,7 +50,7 @@ Max per item: 10
 
 
 # ---------------- PRODUCTS (sample items for the preview) ----------------
-PRODUCT: Lash aftercare kit
+PRODUCT: Kalobeauty Lash Tray
 Price: 39
 Stripe price ID: price_REPLACE_ME_1
 Icon: kit

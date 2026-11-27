@@ -1,7 +1,9 @@
 // Creates a Stripe Checkout session. Runs on Netlify, never in the browser.
 // Your secret key is read from the STRIPE_SECRET_KEY environment variable.
+// Which Stripe mode is used is decided by that key (sk_test_ or sk_live_), set per environment in Netlify.
 const Stripe = require('stripe');
 const { readStock } = require('./_stock');
+const cfg = require('./_config.json');
 
 const json = (status, body) => ({
   statusCode: status,
@@ -13,12 +15,15 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed.' });
   if (!process.env.STRIPE_SECRET_KEY) return json(500, { error: 'Shop is not configured yet.' });
 
-  const site = (process.env.SITE_URL || process.env.URL || '').replace(/\/$/, '');
-  if (!site) return json(500, { error: 'Site address is not configured.' });
+  // The site address is taken from the request itself, so the dev site and the live site each send
+  // customers back to their own address.
+  const host = (event.headers.host || event.headers.Host || '').toLowerCase();
+  if (!host) return json(400, { error: 'Bad request.' });
+  const site = (/^localhost|^127\./.test(host) ? 'http://' : 'https://') + host;
 
-  // Only accept requests that come from your own site
+  // Only accept requests that come from the same site
   const origin = event.headers.origin || event.headers.Origin;
-  if (origin && origin.replace(/\/$/, '') !== site) return json(403, { error: 'Not allowed.' });
+  if (origin && origin.replace(/\/$/, '').toLowerCase() !== site) return json(403, { error: 'Not allowed.' });
 
   let items;
   try { items = JSON.parse(event.body || '{}').items; } catch (e) { return json(400, { error: 'Bad request.' }); }
@@ -52,8 +57,9 @@ exports.handler = async (event) => {
       cancel_url: site + '/shop.html?status=cancelled',
       shipping_address_collection: { allowed_countries: (process.env.SHIP_COUNTRIES || 'AU').split(',').map((s) => s.trim()) },
     };
-    if (process.env.SHIPPING_RATE_ID) params.shipping_options = [{ shipping_rate: process.env.SHIPPING_RATE_ID }];
-    if (process.env.AUTOMATIC_TAX === 'true') params.automatic_tax = { enabled: true };
+    const rate = process.env.SHIPPING_RATE_ID || cfg.shippingRateId;
+    if (rate) params.shipping_options = [{ shipping_rate: rate }];
+    if (process.env.AUTOMATIC_TAX === 'true' || cfg.automaticTax) params.automatic_tax = { enabled: true };
 
     const session = await stripe.checkout.sessions.create(params);
     return json(200, { url: session.url });
