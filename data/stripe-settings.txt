@@ -1,0 +1,16 @@
+# STRIPE SETTINGS for your dev (test) and live shop.
+#
+# Products are NOT listed here any more. Add a product in Stripe and it appears on the site by itself
+# (see STRIPE-ENVIRONMENTS-READ-ME.md for the tags to add to the product).
+#
+# Your "dev" site uses the TEST settings. Your live site (main branch) uses the LIVE settings.
+# Lines starting with # are notes and are ignored.
+
+# Shipping rate (optional). Stripe > Product catalogue > Shipping rates. Starts with shr_
+# Test mode and live mode have different codes. Leave blank to charge no shipping.
+Shipping rate test:
+Shipping rate live:
+
+# Charge GST with Stripe Tax? Write yes or no.
+Automatic tax test: no
+Automatic tax live: no
